@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integer Space Odyssey + Logic Core</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Space Grotesk', 'sans-serif'],
+                    },
+                    colors: {
+                        neon: {
+                            purple: '#a855f7',
+                            cyan: '#06b6d4',
+                            pink: '#ec4899',
+                            gold: '#facc15'
+                        }
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-glow': 'pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        'pulse-glow': {
+                            '0%, 100%': { opacity: 1, boxShadow: '0 0 20px #a855f7' },
+                            '50%': { opacity: .5, boxShadow: '0 0 5px #a855f7' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #020617;
+            background-image:
+                radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%),
+                radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 1) 0, transparent 50%),
+                radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 1) 0, transparent 50%);
+            color: #e2e8f0;
+            overflow: hidden;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .neon-text {
+            text-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .page-section {
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-section.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: scale(1);
+            z-index: 10;
+        }
+
+        .terminal-text {
+            font-family: 'Space Grotesk', sans-serif;
+            letter-spacing: 0.02em;
+        }
+    </style>
+</head>
+
+<body class="h-screen w-screen text-slate-200">
+
+    <!-- PAGE 1: LANDING -->
+    <section id="page-landing" class="page-section active">
+        <div class="absolute inset-0 z-0 opacity-20">
+            <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-neon-purple rounded-full blur-[100px] animate-pulse">
+            </div>
+            <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-neon-cyan rounded-full blur-[100px] animate-pulse"
+                style="animation-delay: 1s;"></div>
+        </div>
+
+        <div class="z-10 text-center space-y-8 animate-float">
+            <h1
+                class="text-6xl md:text-8xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-neon-cyan via-purple-400 to-neon-pink neon-text">
+                INTEGER<br>ODYSSEY
+            </h1>
+            <p class="text-xl text-slate-400 max-w-md mx-auto">Master the number line with Logic Guidance.</p>
+
+            <button onclick="window.navTo('page-menu')"
+                class="group relative px-8 py-4 bg-transparent overflow-hidden rounded-full transition-all duration-300 hover:scale-105">
+                <div
+                    class="absolute inset-0 w-full h-full bg-gradient-to-r from-neon-purple to-neon-pink opacity-80 group-hover:opacity-100 transition-opacity">
+                </div>
+                <div class="absolute inset-0 blur-md bg-gradient-to-r from-neon-purple to-neon-pink opacity-50"></div>
+                <span class="relative text-white font-bold text-xl tracking-widest uppercase flex items-center gap-2">
+                    Enter System <span class="group-hover:translate-x-1 transition-transform">→</span>
+                </span>
+            </button>
+        </div>
+    </section>
+
+    <!-- PAGE 2: MAIN MENU -->
+    <section id="page-menu" class="page-section">
+        <h2 class="text-4xl font-bold mb-12 text-center text-white neon-text">SELECT MODULE</h2>
+
+        <div class="flex flex-col md:flex-row gap-8 z-10">
+            <!-- Explore Card -->
+            <div class="glass-panel p-8 rounded-3xl w-80 hover:bg-white/5 transition-all cursor-pointer transform hover:-translate-y-2 group"
+                onclick="window.navTo('page-explore-select')">
+                <div
+                    class="w-16 h-16 bg-neon-cyan/20 rounded-2xl flex items-center justify-center mb-6 text-neon-cyan group-hover:scale-110 transition-transform">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold mb-2">Explore</h3>
+                <p class="text-slate-400 text-sm">Sandbox mode. Includes <strong>Logic Explainer</strong>.</p>
+                <div
+                    class="mt-6 text-neon-cyan text-sm font-bold uppercase tracking-wider group-hover:tracking-widest transition-all">
+                    Start Simulation &rarr;</div>
+            </div>
+
+            <!-- Quiz Card -->
+            <div class="glass-panel p-8 rounded-3xl w-80 hover:bg-white/5 transition-all cursor-pointer transform hover:-translate-y-2 group"
+                onclick="window.startQuizMode()">
+                <div
+                    class="w-16 h-16 bg-neon-purple/20 rounded-2xl flex items-center justify-center mb-6 text-neon-purple group-hover:scale-110 transition-transform">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold mb-2">Challenge</h3>
+                <p class="text-slate-400 text-sm">Test your skills. Features <strong>Mission Generator</strong>.</p>
+                <div
+                    class="mt-6 text-neon-purple text-sm font-bold uppercase tracking-wider group-hover:tracking-widest transition-all">
+                    Begin Assessment &rarr;</div>
+            </div>
+        </div>
+
+        <button onclick="window.navTo('page-landing')" class="mt-12 text-slate-500 hover:text-white transition-colors">
+            &larr; Back to Gate
+        </button>
+    </section>
+
+    <!-- PAGE 3: EXPLORE SUB-MENU -->
+    <section id="page-explore-select" class="page-section">
+        <h2 class="text-3xl font-bold mb-8 text-center text-white neon-text">SELECT OPERATION</h2>
+
+        <div class="grid grid-cols-1 gap-6 z-10 w-full max-w-md">
+            <button onclick="window.startExploreMode('basic')"
+                class="glass-panel p-6 rounded-2xl flex items-center justify-between hover:bg-white/10 transition-all group">
+                <div class="flex items-center gap-4">
+                    <div
+                        class="w-12 h-12 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xl">
+                        +</div>
+                    <div class="text-left">
+                        <h4 class="font-bold text-lg">Addition & Subtraction</h4>
+                        <p class="text-xs text-slate-400">Master the basics of sliding.</p>
+                    </div>
+                </div>
+                <span class="text-slate-500 group-hover:text-white transition-colors">&rarr;</span>
+            </button>
+
+            <button onclick="window.startExploreMode('advanced')"
+                class="glass-panel p-6 rounded-2xl flex items-center justify-between hover:bg-white/10 transition-all group">
+                <div class="flex items-center gap-4">
+                    <div
+                        class="w-12 h-12 rounded-full bg-pink-500/20 text-pink-400 flex items-center justify-center font-bold text-xl">
+                        ×</div>
+                    <div class="text-left">
+                        <h4 class="font-bold text-lg">Multiplication & Division</h4>
+                        <p class="text-xs text-slate-400">Understand jumps and groups.</p>
+                    </div>
+                </div>
+                <span class="text-slate-500 group-hover:text-white transition-colors">&rarr;</span>
+            </button>
+        </div>
+
+        <button onclick="window.navTo('page-menu')" class="mt-12 text-slate-500 hover:text-white transition-colors">
+            &larr; Back
+        </button>
+    </section>
+
+    <!-- PAGE 4: THE APP (CANVAS) -->
+    <section id="page-app" class="page-section !justify-start pt-4 overflow-hidden">
+
+        <!-- App Header -->
+        <div class="w-full max-w-6xl px-4 flex justify-between items-center z-20 mb-4">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="window.navTo('page-menu')">
+                <div class="w-2 h-2 rounded-full bg-neon-cyan animate-pulse"></div>
+                <span class="font-bold tracking-widest text-sm text-slate-300">SYSTEM <span id="system-mode-label"
+                        class="text-white">ACTIVE</span></span>
+            </div>
+
+            <!-- New Streak Counter Feature -->
+            <div id="streak-container" class="hidden flex items-center gap-2 text-neon-gold font-bold">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 animate-pulse" viewBox="0 0 20 20"
+                    fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z"
+                        clip-rule="evenodd" />
+                </svg>
+                STREAK: <span id="streak-count">0</span>
+            </div>
+
+            <button onclick="window.navTo('page-menu')"
+                class="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-300" viewBox="0 0 20 20"
+                    fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                        clip-rule="evenodd" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- STAGE AREA -->
+        <main class="relative w-full h-[50vh] flex flex-col items-center justify-center">
+
+            <!-- Number Line Container -->
+            <div id="stage-container"
+                class="relative w-full h-full z-10 overflow-x-auto overflow-y-hidden scrollbar-hide cursor-grab active:cursor-grabbing bg-slate-900/50 border-y border-white/5">
+                <svg id="game-svg" class="absolute top-0 left-0 h-full">
+                    <!-- Grid and Character drawn here -->
+                    <g id="grid-layer"></g>
+                    <g id="effects-layer"></g> <!-- Flags, confetti -->
+                    <g id="character-layer"></g>
+                </svg>
+            </div>
+
+            <!-- Feedback Overlay -->
+            <div class="absolute top-8 left-0 w-full flex justify-center pointer-events-none z-20">
+                <div id="feedback-text"
+                    class="glass-panel px-6 py-3 rounded-full text-neon-cyan font-bold tracking-wide shadow-[0_0_15px_rgba(6,182,212,0.3)] opacity-0 transition-all transform translate-y-[-20px]">
+                    System Ready.
+                </div>
+            </div>
+
+            <!-- AI Terminal Overlay (Hidden by default) -->
+            <div id="ai-terminal" class="absolute bottom-4 left-4 right-4 z-40 hidden">
+                <div
+                    class="glass-panel bg-slate-900/95 border-neon-gold/30 rounded-xl p-4 max-w-2xl mx-auto shadow-2xl">
+                    <div class="flex justify-between items-center mb-2 border-b border-white/10 pb-2">
+                        <span class="text-neon-gold text-xs font-bold tracking-widest flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 animate-spin" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                            LOGIC CORE
+                        </span>
+                        <button onclick="window.closeAiTerminal()"
+                            class="text-slate-400 hover:text-white text-xs font-bold tracking-wide">CLOSE [X]</button>
+                    </div>
+                    <p id="ai-output" class="terminal-text text-sm text-slate-200 leading-relaxed min-h-[40px]">
+                        Initializing uplink...
+                    </p>
+                </div>
+            </div>
+        </main>
+
+        <!-- CONTROLS PANEL -->
+        <div
+            class="glass-panel w-full max-w-3xl -mt-6 rounded-t-3xl p-6 z-30 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] flex flex-col gap-4">
+
+            <!-- Sandbox Controls -->
+            <div id="controls-sandbox" class="flex flex-col md:flex-row gap-4 items-center justify-center hidden">
+                <div class="bg-slate-800 p-2 rounded-xl border border-slate-700 flex items-center">
+                    <input type="number" id="input-a" value="2" min="-12" max="12" onchange="window.validateInput(this)"
+                        class="w-16 bg-transparent text-center text-xl font-bold text-white focus:outline-none placeholder-slate-600">
+                </div>
+
+                <select id="input-op" onchange="window.updateOpVisual()"
+                    class="w-20 bg-slate-800 text-neon-purple font-bold text-xl p-3 rounded-xl border border-slate-700 focus:outline-none cursor-pointer text-center appearance-none">
+                    <!-- Options populated by JS -->
+                </select>
+
+                <div class="bg-slate-800 p-2 rounded-xl border border-slate-700 flex items-center">
+                    <input type="number" id="input-b" value="-3" min="-12" max="12"
+                        onchange="window.validateInput(this)"
+                        class="w-16 bg-transparent text-center text-xl font-bold text-white focus:outline-none placeholder-slate-600">
+                </div>
+
+                <div class="flex gap-2 w-full md:w-auto">
+                    <button onclick="window.runSandbox()"
+                        class="flex-1 px-8 py-3 bg-gradient-to-r from-neon-purple to-indigo-600 hover:from-neon-pink hover:to-purple-600 text-white font-bold rounded-xl shadow-lg transition-all transform hover:scale-105 active:scale-95">
+                        EXECUTE
+                    </button>
+                    <button onclick="window.askAiExplain()" id="btn-ai-explain"
+                        class="px-4 py-3 bg-slate-800 border border-neon-gold/50 text-neon-gold hover:bg-neon-gold/10 font-bold rounded-xl shadow-lg transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+                        title="Explain Logic">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="hidden md:inline">EXPLAIN</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Challenge Controls -->
+            <div id="controls-challenge" class="flex flex-col items-center gap-4 hidden">
+                <div
+                    class="flex flex-col md:flex-row items-center gap-4 text-xl font-bold text-slate-300 w-full justify-center">
+                    <div class="flex items-center gap-2">
+                        <span>MISSION:</span>
+                        <span id="challenge-question"
+                            class="bg-slate-800 px-6 py-2 rounded-lg border border-neon-cyan/50 text-neon-cyan shadow-[0_0_10px_rgba(6,182,212,0.2)]">?</span>
+                    </div>
+                    <button onclick="window.generateAiMission()"
+                        class="text-xs px-3 py-1 bg-slate-800 border border-neon-gold/30 text-neon-gold rounded-full hover:bg-neon-gold/10 transition-colors flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        NEW MISSION
+                    </button>
+                </div>
+
+                <!-- Story Display Area -->
+                <div id="challenge-story" class="hidden text-xs text-slate-400 italic text-center max-w-lg font-sans">
+                    "Incoming transmission..."
+                </div>
+
+                <div class="flex gap-4">
+                    <p class="text-sm text-slate-500 self-center">Tap number line to place Flag</p>
+                    <button onclick="window.checkChallenge()" id="btn-check" disabled
+                        class="px-8 py-2 bg-green-600 hover:bg-green-500 text-white font-bold rounded-xl shadow-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+                        VERIFY
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- MAIN SCRIPT (NO API KEY REQUIRED) -->
+    <script>
+        // --- LOCAL LOGIC ENGINE ---
+        function generateLocalExplanation(a, b, op) {
+            a = parseInt(a);
+            b = parseInt(b);
+
+            if (op === 'add') {
+                const dir = b >= 0 ? "FORWARD" : "BACKWARD";
+                return `Start at ${a}. You are adding ${b}, so face RIGHT (positive). Walk ${dir} ${Math.abs(b)} steps.`;
+            }
+
+            if (op === 'subtract') {
+                const dir = b >= 0 ? "FORWARD" : "BACKWARD";
+                return `Start at ${a}. You are subtracting ${b}, so face LEFT (negative side). Now walk ${dir} ${Math.abs(b)} steps. Notice how facing Left flips the direction!`;
+            }
+
+            if (op === 'multiply') {
+                const dir = a >= 0 ? "RIGHT" : "LEFT";
+                const result = a * b;
+                return `The first number (${a}) sets the direction: Face ${dir}. The second number (${b}) is the jump size. Take ${Math.abs(a)} jumps of size ${b}. Total: ${result}.`;
+            }
+
+            if (op === 'divide') {
+                const result = a / b;
+                const signB = b >= 0 ? "RIGHT" : "LEFT";
+
+                if (a > 0 && b < 0) {
+                    return `Target is ${a}. Jump size is ${b} (Facing LEFT). To get to positive ${a} while facing Left, you must jump BACKWARDS! That means -1 jump.`;
+                }
+
+                if (a < 0 && b < 0) {
+                    return `Target is ${a}. Jump size is ${b} (Facing LEFT). Since the target is also negative, just jump FORWARD. Positive amount of jumps!`;
+                }
+
+                return `We are at 0. We need to reach ${a}. Our jump size is ${b} (Facing ${signB}). How many jumps to fit? ${result} jumps.`;
+            }
+
+            return "Logic core analysis complete.";
+        }
+
+        function generateLocalMission(a, b, opSym) {
+            const scenarios = [
+                "Shield levels shifted.",
+                "Thruster pressure adjusted.",
+                "Coordinates updated.",
+                "Cargo weight changed.",
+                "Energy grid fluctuation."
+            ];
+            const sc = scenarios[Math.floor(Math.random() * scenarios.length)];
+            return `System Alert: ${sc} Data: ${a} and ${b}. Operation: ${opSym}. Calculate final status.`;
+        }
+
+        // --- EXPORT GLOBAL FUNCTIONS TO WINDOW ---
+        window.navTo = navTo;
+        window.validateInput = validateInput;
+        window.updateOpVisual = updateOpVisual;
+        window.runSandbox = runSandbox;
+        window.startExploreMode = startExploreMode;
+        window.startQuizMode = startQuizMode;
+        window.checkChallenge = checkChallenge;
+        window.askAiExplain = askAiExplain;
+        window.closeAiTerminal = closeAiTerminal;
+        window.generateAiMission = generateAiMission;
+
+        // --- CORE FUNCTIONS ---
+
+        async function askAiExplain() {
+            const a = document.getElementById('input-a').value;
+            const b = document.getElementById('input-b').value;
+            const op = document.getElementById('input-op').value;
+
+            // Open Terminal
+            const term = document.getElementById('ai-terminal');
+            const out = document.getElementById('ai-output');
+            term.classList.remove('hidden');
+            out.innerHTML = `<span class="animate-pulse text-neon-gold">Analyzing vector dynamics...</span>`;
+
+            // Simulate "thinking" delay
+            setTimeout(() => {
+                const explanation = generateLocalExplanation(a, b, op);
+                typeWriter(out, explanation);
+            }, 600);
+        }
+
+        async function generateAiMission() {
+            const storyEl = document.getElementById('challenge-story');
+            const qEl = document.getElementById('challenge-question');
+
+            storyEl.classList.remove('hidden');
+            storyEl.innerHTML = `<span class="animate-pulse text-neon-gold">Scanning...</span>`;
+            qEl.innerText = "...";
+
+            setTimeout(() => {
+                const a = Math.floor(Math.random() * 9) * (Math.random() > 0.5 ? 1 : -1);
+                const b = Math.floor(Math.random() * 9) * (Math.random() > 0.5 ? 1 : -1);
+                const ops = ['+', '-'];
+                const opSym = ops[Math.floor(Math.random() * 2)];
+
+                // Local Logic Story
+                const story = generateLocalMission(a, b, opSym);
+
+                let res = opSym === '+' ? a + b : a - b;
+                state.challengeData = { a, b, op: opSym, target: res };
+
+                storyEl.innerText = `"${story}"`;
+                qEl.innerText = `${a < 0 ? '(' + a + ')' : a} ${opSym} ${b < 0 ? '(' + b + ')' : b}`;
+
+                showFeedback("Mission Data Received. Place Flag.", "cyan");
+                document.getElementById('btn-check').disabled = true;
+                state.userFlagPos = null;
+            }, 500);
+        }
+
+        function typeWriter(element, text, i = 0) {
+            if (i === 0) element.innerHTML = "";
+            if (i < text.length) {
+                element.innerHTML += text.charAt(i);
+                setTimeout(() => typeWriter(element, text, i + 1), 20);
+            }
+        }
+
+        function closeAiTerminal() {
+            document.getElementById('ai-terminal').classList.add('hidden');
+        }
+
+
+        // --- NAVIGATION SYSTEM ---
+        function navTo(pageId) {
+            document.querySelectorAll('.page-section').forEach(el => {
+                el.classList.remove('active');
+            });
+            setTimeout(() => {
+                document.getElementById(pageId).classList.add('active');
+            }, 100);
+        }
+
+        // --- GAME CONFIG & STATE ---
+        const CONFIG = {
+            minVal: -25,
+            maxVal: 25,
+            stepSize: 70,
+            tickHeight: 20,
+            axisY: 250,
+        };
+
+        let state = {
+            mode: 'sandbox',
+            subMode: 'basic',
+            charPos: 0,
+            charFacing: 1,
+            isAnimating: false,
+            challengeTarget: null,
+            userFlagPos: null,
+            challengeData: null,
+            streak: 0
+        };
+
+        // --- DOM ELEMENTS ---
+        const svg = document.getElementById('game-svg');
+        const gridLayer = document.getElementById('grid-layer');
+        const charLayer = document.getElementById('character-layer');
+        const effectsLayer = document.getElementById('effects-layer');
+        const stageContainer = document.getElementById('stage-container');
+        const feedbackEl = document.getElementById('feedback-text');
+
+        // --- INIT ---
+        function init() {
+            setupSVG();
+            drawNumberLine();
+            drawCharacter(0, 1);
+            setTimeout(() => centerViewOn(0, false), 100);
+        }
+
+        // --- VISUAL ENGINE ---
+        function setupSVG() {
+            const totalUnits = CONFIG.maxVal - CONFIG.minVal + 6;
+            const width = totalUnits * CONFIG.stepSize;
+            svg.style.width = `${width}px`;
+        }
+
+        function getXForValue(val) {
+            return (val - CONFIG.minVal + 3) * CONFIG.stepSize;
+        }
+
+        function drawNumberLine() {
+            let html = '';
+            const startX = getXForValue(CONFIG.minVal);
+            const endX = getXForValue(CONFIG.maxVal);
+            html += `<line x1="${startX}" y1="${CONFIG.axisY}" x2="${endX}" y2="${CONFIG.axisY}" stroke="#334155" stroke-width="2" stroke-linecap="round" />`;
+
+            for (let i = CONFIG.minVal; i <= CONFIG.maxVal; i++) {
+                const x = getXForValue(i);
+                const isZero = i === 0;
+                const color = isZero ? '#a855f7' : '#475569';
+                const tickH = isZero ? 40 : 20;
+                const textSize = isZero ? 24 : 16;
+                const textFill = isZero ? '#fff' : '#64748b';
+                const fontWeight = isZero ? 'bold' : 'normal';
+
+                html += `<line x1="${x}" y1="${CONFIG.axisY - tickH / 2}" x2="${x}" y2="${CONFIG.axisY + tickH / 2}" stroke="${color}" stroke-width="${isZero ? 3 : 2}" />`;
+                html += `<text x="${x}" y="${CONFIG.axisY + 45}" text-anchor="middle" font-family="Space Grotesk" font-size="${textSize}" font-weight="${fontWeight}" fill="${textFill}" style="pointer-events: none; user-select: none;">${i}</text>`;
+            }
+            gridLayer.innerHTML = html;
+        }
+
+        function drawCharacter(pos, facing, isJump = false, jumpY = 0) {
+            const x = getXForValue(pos);
+            const y = CONFIG.axisY - 60 - jumpY;
+
+            const transform = `translate(${x}, ${y}) scale(${facing}, 1)`;
+            const glowColor = state.isAnimating ? '#06b6d4' : '#a855f7';
+
+            const robotSVG = `
+                <g transform="${transform}">
+                    <circle cx="0" cy="-30" r="40" fill="${glowColor}" fill-opacity="0.2" filter="blur(10px)" />
+                    <path d="M-20,-60 L20,-60 L25,-10 L-25,-10 Z" fill="#1e293b" stroke="${glowColor}" stroke-width="2"/>
+                    <rect x="-15" y="-50" width="30" height="20" rx="5" fill="#0f172a"/>
+                    <circle cx="-5" cy="-40" r="3" fill="${glowColor}" class="animate-pulse"/>
+                    <circle cx="8" cy="-40" r="3" fill="${glowColor}" class="animate-pulse"/>
+                    <line x1="0" y1="-60" x2="0" y2="-75" stroke="${glowColor}" stroke-width="2"/>
+                    <circle cx="0" cy="-75" r="3" fill="#ec4899" />
+                    <circle cx="0" cy="-5" r="12" fill="#334155" stroke="${glowColor}" stroke-width="2"/>
+                    <circle cx="0" cy="-5" r="5" fill="${glowColor}"/>
+                </g>
+            `;
+            charLayer.innerHTML = robotSVG;
+        }
+
+        function centerViewOn(val, smooth = true) {
+            const x = getXForValue(val);
+            const containerWidth = stageContainer.clientWidth;
+            stageContainer.scrollTo({
+                left: x - containerWidth / 2,
+                behavior: smooth ? 'smooth' : 'auto'
+            });
+        }
+
+        function showFeedback(text, type = 'neutral') {
+            feedbackEl.innerText = text;
+            feedbackEl.style.opacity = '1';
+            feedbackEl.style.transform = 'translateY(0)';
+
+            if (type === 'error') feedbackEl.style.color = '#ef4444';
+            else if (type === 'success') feedbackEl.style.color = '#22c55e';
+            else feedbackEl.style.color = '#06b6d4';
+        }
+
+        function validateInput(input) {
+            let val = parseInt(input.value);
+            if (val > 12) input.value = 12;
+            if (val < -12) input.value = -12;
+        }
+
+        function updateOpVisual() {
+            // Helper for dropdown changes if needed
+        }
+
+        // --- MODE MANAGERS ---
+
+        function startExploreMode(subMode) {
+            state.mode = 'sandbox';
+            state.subMode = subMode;
+
+            const select = document.getElementById('input-op');
+            select.innerHTML = '';
+            if (subMode === 'basic') {
+                select.innerHTML = `
+                    <option value="add">+</option>
+                    <option value="subtract">−</option>
+                `;
+            } else {
+                select.innerHTML = `
+                    <option value="multiply">×</option>
+                    <option value="divide">÷</option>
+                `;
+            }
+
+            document.getElementById('system-mode-label').innerText = "EXPLORE: " + subMode.toUpperCase();
+            document.getElementById('controls-sandbox').classList.remove('hidden');
+            document.getElementById('controls-challenge').classList.add('hidden');
+            document.getElementById('streak-container').classList.add('hidden');
+
+            document.getElementById('challenge-story').classList.add('hidden');
+
+            resetCharacter();
+            navTo('page-app');
+        }
+
+        function startQuizMode() {
+            state.mode = 'challenge';
+            document.getElementById('system-mode-label').innerText = "CHALLENGE PROTOCOL";
+            document.getElementById('controls-sandbox').classList.add('hidden');
+            document.getElementById('controls-challenge').classList.remove('hidden');
+            document.getElementById('challenge-story').classList.add('hidden');
+            document.getElementById('streak-container').classList.remove('hidden');
+
+            resetCharacter();
+            generateChallenge();
+            navTo('page-app');
+        }
+
+        function resetCharacter() {
+            state.charPos = 0;
+            state.charFacing = 1;
+            drawCharacter(0, 1);
+            centerViewOn(0);
+            effectsLayer.innerHTML = '';
+            showFeedback("System Ready.");
+            closeAiTerminal();
+        }
+
+        // --- ANIMATION QUEUE SYSTEM ---
+        class AnimationQueue {
+            constructor() {
+                this.queue = [];
+                this.isProcessing = false;
+            }
+
+            add(action) {
+                this.queue.push(action);
+                if (!this.isProcessing) this.processNext();
+            }
+
+            processNext() {
+                if (this.queue.length === 0) {
+                    this.isProcessing = false;
+                    state.isAnimating = false;
+                    return;
+                }
+                this.isProcessing = true;
+                state.isAnimating = true;
+                const action = this.queue.shift();
+
+                if (action.type === 'WALK') this.animWalk(action);
+                else if (action.type === 'FLIP') this.animFlip(action);
+                else if (action.type === 'JUMP') this.animJump(action);
+                else if (action.type === 'DELAY') {
+                    showFeedback(action.msg);
+                    setTimeout(() => this.processNext(), action.duration);
+                }
+                else if (action.type === 'RESET') {
+                    resetCharacter();
+                    setTimeout(() => this.processNext(), 500);
+                }
+            }
+
+            animWalk(a) {
+                showFeedback(a.msg);
+                state.charFacing = a.facing;
+
+                const duration = Math.abs(a.to - a.from) * 300;
+                const startTime = performance.now();
+
+                const loop = (time) => {
+                    const progress = Math.min((time - startTime) / duration, 1);
+                    const cur = a.from + (a.to - a.from) * progress;
+
+                    drawCharacter(cur, a.facing);
+                    centerViewOn(cur);
+
+                    if (progress < 1) requestAnimationFrame(loop);
+                    else {
+                        state.charPos = a.to;
+                        this.processNext();
+                    }
+                };
+                requestAnimationFrame(loop);
+            }
+
+            animFlip(a) {
+                showFeedback(a.msg);
+                const duration = 400;
+                const startTime = performance.now();
+
+                const loop = (time) => {
+                    const progress = Math.min((time - startTime) / duration, 1);
+                    let scale = a.fromFacing * (1 - progress * 2);
+                    if (progress >= 0.5) scale = a.toFacing * ((progress - 0.5) * 2);
+
+                    drawCharacter(state.charPos, scale);
+
+                    if (progress < 1) requestAnimationFrame(loop);
+                    else {
+                        state.charFacing = a.toFacing;
+                        drawCharacter(state.charPos, a.toFacing);
+                        this.processNext();
+                    }
+                };
+                requestAnimationFrame(loop);
+            }
+
+            animJump(a) {
+                showFeedback(a.msg);
+                state.charFacing = a.facing;
+                const duration = 600;
+                const startTime = performance.now();
+
+                const loop = (time) => {
+                    const progress = Math.min((time - startTime) / duration, 1);
+                    const jumpY = 4 * 100 * progress * (1 - progress);
+                    const cur = a.from + (a.to - a.from) * progress;
+
+                    drawCharacter(cur, a.facing, true, jumpY);
+                    centerViewOn(cur);
+
+                    if (progress < 1) requestAnimationFrame(loop);
+                    else {
+                        state.charPos = a.to;
+                        drawCharacter(a.to, a.facing);
+                        this.processNext();
+                    }
+                };
+                requestAnimationFrame(loop);
+            }
+        }
+
+        const animator = new AnimationQueue();
+
+        // --- CORE LOGIC (SHARED) ---
+        // New helper function to centralize animation logic
+        function queueOperationAnimation(a, b, op) {
+            a = parseInt(a);
+            b = parseInt(b);
+
+            animator.add({ type: 'RESET' });
+
+            if (op === 'add' || op === '+' || op === 'subtract' || op === '-') {
+                // Initial movement
+                if (a !== 0) {
+                    animator.add({
+                        type: 'WALK', from: 0, to: a, facing: a >= 0 ? 1 : -1,
+                        msg: `Move to initial position: ${a}`
+                    });
+                } else {
+                    animator.add({ type: 'DELAY', duration: 500, msg: "Start at Zero." });
+                }
+
+                if (op === 'add' || op === '+') {
+                    animator.add({
+                        type: 'FLIP', fromFacing: a >= 0 ? 1 : -1, toFacing: 1,
+                        msg: "Addition (+): Face Positive (Right)"
+                    });
+                    const target = a + b;
+                    const dirText = b >= 0 ? "FORWARD" : "BACKWARD";
+                    animator.add({
+                        type: 'WALK', from: a, to: target, facing: 1,
+                        msg: `Add ${b}: Walk ${dirText} ${Math.abs(b)} steps`
+                    });
+                } else { // Subtract
+                    animator.add({
+                        type: 'FLIP', fromFacing: 1, toFacing: -1,
+                        msg: "Subtraction (-): Turn Around!"
+                    });
+                    const target = a - b;
+                    const dirText = b >= 0 ? "FORWARD" : "BACKWARD";
+                    animator.add({
+                        type: 'WALK', from: a, to: target, facing: -1,
+                        msg: `Subtract ${b}: Walk ${dirText} ${Math.abs(b)} steps`
+                    });
+                }
+            } else if (op === 'multiply' || op === '×') {
+                const faceA = a >= 0 ? 1 : -1;
+                const absA = Math.abs(a);
+                animator.add({
+                    type: 'FLIP', fromFacing: 1, toFacing: faceA,
+                    msg: `First number ${a}: Face ${a >= 0 ? 'Right' : 'Left'}`
+                });
+                let current = 0;
+                const step = faceA * b;
+                for (let i = 0; i < absA; i++) {
+                    animator.add({
+                        type: 'JUMP', from: current, to: current + step, facing: faceA,
+                        msg: `Jump ${i + 1}/${absA}: Size ${b}`
+                    });
+                    current += step;
+                }
+                animator.add({ type: 'DELAY', duration: 1000, msg: `Result: ${a * b}` });
+            } else if (op === 'divide' || op === '÷') {
+                // ... Existing division logic ...
+                if (b === 0) return;
+                animator.add({
+                    type: 'WALK', from: 0, to: a, facing: a >= 0 ? 1 : -1,
+                    msg: `Position at ${a}`
+                });
+                animator.add({ type: 'RESET' });
+                const result = a / b;
+                let current = 0;
+                const facing = b >= 0 ? 1 : -1;
+                animator.add({
+                    type: 'FLIP', fromFacing: 1, toFacing: facing,
+                    msg: `Jump size is ${b}: Face ${facing == 1 ? 'Right' : 'Left'}`
+                });
+                const count = Math.abs(result);
+                const jumpDirText = result >= 0 ? "Forward" : "Backward";
+                for (let i = 0; i < count; i++) {
+                    const step = a / count;
+                    const nextP = current + step;
+                    animator.add({
+                        type: 'JUMP', from: current, to: nextP, facing: facing,
+                        msg: `Jump ${i + 1}: ${jumpDirText} size ${Math.abs(b)}`
+                    });
+                    current = nextP;
+                }
+                animator.add({ type: 'DELAY', duration: 1000, msg: `Result: ${result} Jumps` });
+            }
+        }
+
+        function runSandbox() {
+            if (state.isAnimating) return;
+            const a = document.getElementById('input-a').value;
+            const b = document.getElementById('input-b').value;
+            const op = document.getElementById('input-op').value;
+            queueOperationAnimation(a, b, op);
+        }
+
+        // --- CHALLENGE LOGIC ---
+        function generateChallenge() {
+            const a = Math.floor(Math.random() * 9) * (Math.random() > 0.5 ? 1 : -1);
+            const b = Math.floor(Math.random() * 9) * (Math.random() > 0.5 ? 1 : -1);
+
+            const ops = ['+', '-', '×'];
+            const opSym = ops[Math.floor(Math.random() * 3)];
+
+            let res;
+            if (opSym === '+') res = a + b;
+            if (opSym === '-') res = a - b;
+            if (opSym === '×') {
+                const smallA = Math.max(-5, Math.min(5, a));
+                const smallB = Math.max(-4, Math.min(4, b));
+                res = smallA * smallB;
+                state.challengeData = { a: smallA, b: smallB, op: opSym, target: res };
+                document.getElementById('challenge-question').innerText = `${smallA < 0 ? '(' + smallA + ')' : smallA} ${opSym} ${smallB < 0 ? '(' + smallB + ')' : smallB}`;
+                return;
+            }
+
+            state.challengeData = { a, b, op: opSym, target: res };
+            document.getElementById('challenge-question').innerText = `${a < 0 ? '(' + a + ')' : a} ${opSym} ${b < 0 ? '(' + b + ')' : b}`;
+
+            showFeedback("Tap the number line to place your Flag!", "cyan");
+            document.getElementById('btn-check').disabled = true;
+            state.userFlagPos = null;
+        }
+
+        stageContainer.addEventListener('click', (e) => {
+            if (state.mode !== 'challenge' || state.isAnimating) return;
+
+            if (e.target.closest('svg')) {
+                const clickX = e.offsetX;
+                const val = Math.round((clickX / CONFIG.stepSize) - 3 + CONFIG.minVal);
+
+                state.userFlagPos = val;
+
+                // Keep existing flags
+                const fx = getXForValue(val);
+                effectsLayer.innerHTML = `
+                    <g transform="translate(${fx}, ${CONFIG.axisY})">
+                        <line x1="0" y1="0" x2="0" y2="-50" stroke="#ef4444" stroke-width="4"/>
+                        <path d="M0,-50 L30,-35 L0,-20 Z" fill="#ef4444"/>
+                        <circle cx="0" cy="0" r="5" fill="#fff"/>
+                    </g>
+                `;
+                document.getElementById('btn-check').disabled = false;
+                showFeedback(`Selected: ${val}`, 'neutral');
+            }
+        });
+
+        function checkChallenge() {
+            if (state.userFlagPos === null) return;
+            const correct = state.challengeData.target;
+            const { a, b, op } = state.challengeData;
+
+            if (state.userFlagPos === correct) {
+                showFeedback("CORRECT! VERIFYING PATH...", "success");
+                createConfetti(getXForValue(correct));
+
+                // Increment Streak
+                state.streak++;
+                updateStreakDisplay();
+
+                // Run Animation to prove it
+                setTimeout(() => {
+                    queueOperationAnimation(a, b, op);
+                }, 1000);
+
+            } else {
+                showFeedback(`Incorrect. Target was ${correct}. OBSERVING CORRECT PATH...`, "error");
+
+                // Reset Streak
+                state.streak = 0;
+                updateStreakDisplay();
+
+                const cx = getXForValue(correct);
+                effectsLayer.innerHTML += `
+                     <g transform="translate(${cx}, ${CONFIG.axisY}) opacity="0.5">
+                        <line x1="0" y1="0" x2="0" y2="-50" stroke="#22c55e" stroke-width="4" stroke-dasharray="4"/>
+                        <path d="M0,-50 L30,-35 L0,-20 Z" fill="#22c55e"/>
+                    </g>
+                `;
+
+                // Run Animation to show why
+                setTimeout(() => {
+                    queueOperationAnimation(a, b, op);
+                }, 1500);
+            }
+        }
+
+        function updateStreakDisplay() {
+            const el = document.getElementById('streak-count');
+            el.innerText = state.streak;
+            // Add a little pop effect
+            el.parentElement.classList.remove('scale-125');
+            void el.parentElement.offsetWidth; // trigger reflow
+            el.parentElement.classList.add('scale-125', 'transition-transform', 'duration-200');
+            setTimeout(() => el.parentElement.classList.remove('scale-125'), 200);
+        }
+
+        function createConfetti(x) {
+            let html = '';
+            for (let i = 0; i < 20; i++) {
+                const dx = (Math.random() - 0.5) * 100;
+                const dy = (Math.random() - 1) * 100;
+                const color = ['#a855f7', '#06b6d4', '#ec4899'][Math.floor(Math.random() * 3)];
+                html += `<circle cx="${dx}" cy="${dy}" r="3" fill="${color}" class="animate-ping" style="animation-duration: ${0.5 + Math.random()}s" />`;
+            }
+            const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            group.setAttribute("transform", `translate(${x}, ${CONFIG.axisY - 50})`);
+            group.innerHTML = html;
+            effectsLayer.appendChild(group);
+        }
+
+        init();
+
+    </script>
+</body>
+
+</html>
